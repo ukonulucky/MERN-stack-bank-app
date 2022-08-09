@@ -1,0 +1,33 @@
+const express = require("express")
+const schema = require("../dB/dBSchema")
+const router = express.Router()
+
+
+// destructring schema
+const {allUserHistorySchema, allUserSchema } = schema
+// creating user routes
+
+// register route
+
+router.post("/user", async (req, res) => {
+    try {
+        console.log(req.body)
+        const { name, accountNUmber } = req.body
+        console.log(name, accountNUmber)
+        if (name && accountNUmber) {
+           console.log(name, accountNUmber)
+            const newUser = new allUserSchema({
+                name: name,
+                accountNUmber:accountNUmber
+            })
+            await newUser.save()
+            console.log(newUser)
+          
+            res.json(newUser)
+     }
+   } catch (error) {
+    console.log(error.message)
+   }
+}) 
+
+module.exports = router
