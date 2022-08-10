@@ -9,25 +9,40 @@ const {allUserHistorySchema, allUserSchema } = schema
 
 // register route
 
-router.post("/user", async (req, res) => {
+router.post("/register", async (req, res) => {
     try {
         console.log(req.body)
-        const { name, accountNUmber } = req.body
-        console.log(name, accountNUmber)
-        if (name && accountNUmber) {
-           console.log(name, accountNUmber)
+        const { phoneNumber, email, address, fullName, password } = req.body
+        if (phoneNumber && email && address && fullName && password) {
             const newUser = new allUserSchema({
-                name: name,
-                accountNUmber:accountNUmber
+                phoneNumber, email, password, fullName, address
             })
             await newUser.save()
             console.log(newUser)
-          
-            res.json(newUser)
+            
+            res.status(200).json(newUser)
      }
    } catch (error) {
     console.log(error.message)
    }
 }) 
+
+router.post("/login", async (req, res) => {
+    try {
+        const { phoneNumber, password} = req.body
+      const findUser = await allUserSchema.find({
+        phoneNumber, password
+      })
+        if (findUser.length > 0) {
+            console.log(findUser)
+        res.status(201).json(findUser)
+        } else {
+            res.status(404).json(findUser) 
+      }
+    } catch (error) {
+        console.log(error.message)
+     res.json(error.message).statusCode(401)
+  }
+})
 
 module.exports = router

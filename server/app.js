@@ -18,8 +18,7 @@ app.use(express.json())
 app.use(cors())
 
 // routes
-app.use("/reg", router)
-
+app.use("/user", router)
 
 // starting server
 
@@ -33,4 +32,5 @@ const dBAndServerConnect = async () => {
      console.log(error.message)
    }
 }
+
 dBAndServerConnect()
