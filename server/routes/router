@@ -2,12 +2,13 @@ const express = require("express")
 const schema = require("../dB/dBSchema")
 const router = express.Router()
 
-
+const handleErorrs
 // destructring schema
 const {allUserHistorySchema, allUserSchema } = schema
 // creating user routes
 
 // register route
+
 
 router.post("/register", async (req, res) => {
     try {

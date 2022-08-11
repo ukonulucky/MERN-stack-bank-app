@@ -1,13 +1,17 @@
 const mongoose = require("mongoose")
+const { isEmail } = require("validator")
 
 const allUser = mongoose.Schema({
         fullName: {
         type: String,
-        required:true
+        required: [true, "full name is required"],
+        lowercase:true
     },
     email: {
         type: String,
-        required:true
+        required: [true, "full name is required"],
+        lowercase: true,
+        validate:[isEmail, "Email is required"]
     },
     phoneNumber: {
         type: String,
@@ -16,7 +20,8 @@ const allUser = mongoose.Schema({
     },
     address: {
         type:   String,
-        required:true
+        required: [true, "full name is required"],
+        lowercase:true
     },
     password: {
         type: String,
