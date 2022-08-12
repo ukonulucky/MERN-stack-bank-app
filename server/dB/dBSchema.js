@@ -1,21 +1,22 @@
 const mongoose = require("mongoose")
 const { isEmail } = require("validator")
+const bcrypt = require("bcrypt")
 
 const allUser = mongoose.Schema({
         fullName: {
         type: String,
-        required: [true, "full name is required"],
+        required: [true, "Full name is required"],
         lowercase:true
     },
     email: {
         type: String,
-        required: [true, "full name is required"],
+        required: [true, "Email is is required"],
         lowercase: true,
-        validate:[isEmail, "Email is required"]
+        validate:[isEmail, "Email is not valid "]
     },
     phoneNumber: {
-        type: String,
-        required: true,
+        type: Number,
+        required: [true, "phoneNumber is required"],
         unique:true
     },
     address: {
@@ -25,39 +26,19 @@ const allUser = mongoose.Schema({
     },
     password: {
         type: String,
-        required:true
+        required: true,
+        minLength: 6,
+        trim:true
   }
-},  { timestamps: true })
+}, { timestamps: true })
+
+//salting and hashing my password field before initialization
+allUser.pre("save", async function(next){
+    const newSalt = await bcrypt.genSalt()
+    this.password  = await bcrypt.hash(this.password, newSalt)
+    next()
+})
 
 const allUserSchema = mongoose.model("allUser", allUser)
  
-const userHistory = mongoose.Schema({
-   
-    history: [{
-        name: {
-            type: String,
-            required: true
-        },
-        accountNUmber: {
-            type: Number,
-            required:true
-        },
-        transaction: {
-            type: String
-        },
-        amount: {
-            type: Number,
-            required: true
-    
-        },
-        balance: {
-            type: Number,
-            required: true
-        }
-    }]
-},   { timestamps: true })
- const allUserHistorySchema = mongoose.model("userHistory",userHistory)
-
-module.exports = {
-    allUserSchema, allUserHistorySchema
-}
+module.exports = allUserSchema

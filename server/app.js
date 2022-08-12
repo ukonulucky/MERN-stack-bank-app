@@ -11,7 +11,7 @@ const corsConfig = {
 
 }
 
-const app = express()
+const app = express() 
 
 // middleware
 app.use(express.json())
@@ -32,5 +32,6 @@ const dBAndServerConnect = async () => {
      console.log(error.message)
    }
 }
+
 
 dBAndServerConnect()

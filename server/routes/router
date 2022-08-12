@@ -1,20 +1,42 @@
 const express = require("express")
-const schema = require("../dB/dBSchema")
+const allUserSchema = require("../dB/dBSchema")
+
 const router = express.Router()
 
-const handleErorrs
-// destructring schema
-const {allUserHistorySchema, allUserSchema } = schema
+const handleErorrs = (err) => {
+  const generatedError = {
+
+  }
+  if (err.code) {
+    generatedError["phoneNumber"] = "phoneNumber must be unique"
+    console.log(generatedError)
+    return generatedError
+  }
+  
+
+  if (err.message.includes("allUser validation failed")) {
+    console.log(err.errors)
+    Object.values(err.errors).map(i => {
+      console.log(i.properties)
+    //  generatedError[i.properties.path] = i.properties.message
+    })
+    return generatedError
+  }
+
+}
+
+
 // creating user routes
 
 // register route
 
 
 router.post("/register", async (req, res) => {
-    try {
-        console.log(req.body)
+  try {
+    
         const { phoneNumber, email, address, fullName, password } = req.body
-        if (phoneNumber && email && address && fullName && password) {
+      if (phoneNumber && email && address && fullName && password) {
+      
             const newUser = new allUserSchema({
                 phoneNumber, email, password, fullName, address
             })
@@ -23,8 +45,10 @@ router.post("/register", async (req, res) => {
             
             res.status(200).json(newUser)
      }
-   } catch (error) {
-    console.log(error.message)
+  } catch (error) {
+    const newErrors = handleErorrs(error)
+    console.log(newErrors)
+    res.status(400).json({newErrors})
    }
 }) 
 

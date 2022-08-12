@@ -8,8 +8,10 @@ const MONGU_URL  = process.env.MONGU_URL
 const dBConnet = async() => {
     try {
      const res = await mongoose.connect(MONGU_URL, {
-        useNewUrlParser: true,
-        useUnifiedToPology: true
+         autoIndex: true,
+         useNewUrlParser: true,
+         useUnifiedTopology: true,
+      
             
      })
         return res
