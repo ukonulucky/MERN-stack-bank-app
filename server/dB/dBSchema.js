@@ -15,7 +15,7 @@ const allUser = mongoose.Schema({
         validate:[isEmail, "Email is not valid "]
     },
     phoneNumber: {
-        type: Number,
+        type: String,
         required: [true, "phoneNumber is required"],
         unique:true
     },
@@ -32,6 +32,12 @@ const allUser = mongoose.Schema({
   }
 }, { timestamps: true })
 
+// checking fro uniqueness of the email
+allUser.path("phoneNumber").validate(async(phoneNumber) => {
+    const res = await mongoose.models.allUser.countDocuments({ phoneNumber })
+    return !res
+}, "Phone number must be unique")
+
 //salting and hashing my password field before initialization
 allUser.pre("save", async function(next){
     const newSalt = await bcrypt.genSalt()
@@ -39,6 +45,24 @@ allUser.pre("save", async function(next){
     next()
 })
 
+// creating a mongoose static method
+
+allUser.statics.login = async function (phoneNumber, password) {
+    console.log(phoneNumber, password)
+    const user = await this.findOne({ phoneNumber })
+    console.log(user)
+    if (user) {
+        const res = await bcrypt.compare(password, user.password)
+        if (res) {
+            return user
+        }
+        else {
+            throw Error("incorrect password")
+        }
+    }
+    throw Error("incorrect phonenumber")
+
+}
 const allUserSchema = mongoose.model("allUser", allUser)
  
 module.exports = allUserSchema

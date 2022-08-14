@@ -1,5 +1,6 @@
 const express = require("express")
 const allUserSchema = require("../dB/dBSchema")
+const jwt = require("jsonwebtoken")
 
 const router = express.Router()
 
@@ -9,7 +10,6 @@ const handleErorrs = (err) => {
   }
   if (err.code) {
     generatedError["phoneNumber"] = "phoneNumber must be unique"
-    console.log(generatedError)
     return generatedError
   }
   
@@ -17,14 +17,28 @@ const handleErorrs = (err) => {
   if (err.message.includes("allUser validation failed")) {
     console.log(err.errors)
     Object.values(err.errors).map(i => {
-      console.log(i.properties)
-    //  generatedError[i.properties.path] = i.properties.message
+     generatedError[i.properties.path] = i.properties.message
     })
-    return generatedError
+  
   }
-
+  if (err.message === "incorrect phonenumber") {
+   generatedError["phoneNumberError"] ="incorrect phonenumber"
+  }
+  if (err.message === "incorrect password") {
+    generatedError["passwordError"] ="incorrect password"
+  }
+  return generatedError
 }
+// creaingToken
 
+
+const lifeTime = 60 * 60 * 3 // a lifetime of 3 hours
+ 
+const creatJwt = (id) => {
+  return jwt.sign({ id }, "mysignature", {
+     expiresIn: lifeTime
+   })
+}
 
 // creating user routes
 
@@ -33,7 +47,7 @@ const handleErorrs = (err) => {
 
 router.post("/register", async (req, res) => {
   try {
-    
+    console.log(req.body)
         const { phoneNumber, email, address, fullName, password } = req.body
       if (phoneNumber && email && address && fullName && password) {
       
@@ -41,32 +55,39 @@ router.post("/register", async (req, res) => {
                 phoneNumber, email, password, fullName, address
             })
             await newUser.save()
-            console.log(newUser)
-            
-            res.status(200).json(newUser)
+        console.log(newUser)
+        // creating cookie
+        const token = creatJwt(newUser._id)
+        res.cookie('user-tokin', token, {
+          maxAge: lifeTime * 1000,
+          httpOnly:true
+        })
+        res.status(201).json(newUser)
      }
   } catch (error) {
     const newErrors = handleErorrs(error)
-    console.log(newErrors)
-    res.status(400).json({newErrors})
+    console.log("this is the error", newErrors)
+    res.status(202).json({newErrors})
    }
 }) 
 
 router.post("/login", async (req, res) => {
-    try {
+  try {
+      console.log(req.body)
         const { phoneNumber, password} = req.body
-      const findUser = await allUserSchema.find({
-        phoneNumber, password
-      })
-        if (findUser.length > 0) {
-            console.log(findUser)
-        res.status(201).json(findUser)
-        } else {
-            res.status(404).json(findUser) 
-      }
-    } catch (error) {
-        console.log(error.message)
-     res.json(error.message).statusCode(401)
+      const findUser = await allUserSchema.login(phoneNumber, password)
+       // creating cookie
+    console.log(findUser)
+       const token = creatJwt(findUser)
+       res.cookie('user-tokin', token, {
+         maxAge: lifeTime * 1000,
+         httpOnly:true
+       })
+       res.status(201).json(findUser)
+  } catch (error) {
+    console.log("this is the error", error.message)
+      const errors = handleErorrs(error)
+     res.status(202).json(errors)
   }
 })
 
