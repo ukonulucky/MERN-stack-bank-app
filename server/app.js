@@ -7,7 +7,6 @@ const cookieParser = require("cookie-parser")
 
 const port = process.env.PORT || 5000
 
-
 // cors configuration
 const corsConfig = {
   origin: ['http://localhost:3000'],
@@ -15,10 +14,10 @@ const corsConfig = {
   "Access-Control-Allow-Credentials": true,
 }
 
-
 const app = express()
 
 // middleware
+
 app.use(express.json())
 app.use(cors(corsConfig))
 app.use(cookieParser())

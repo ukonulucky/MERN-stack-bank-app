@@ -32,7 +32,7 @@ const allUser = mongoose.Schema({
   }
 }, { timestamps: true })
 
-// checking fro uniqueness of the email
+// checking fro uniqueness of the phoneNumber
 allUser.path("phoneNumber").validate(async(phoneNumber) => {
     const res = await mongoose.models.allUser.countDocuments({ phoneNumber })
     return !res

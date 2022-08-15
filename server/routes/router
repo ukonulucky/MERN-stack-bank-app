@@ -1,6 +1,9 @@
 const express = require("express")
 const allUserSchema = require("../dB/dBSchema")
 const jwt = require("jsonwebtoken")
+const allUserHistorySchema = require("../dB/dbHistory")
+const { findOneAndUpdate } = require("../dB/dBSchema")
+const { rmSync } = require("fs")
 
 const router = express.Router()
 
@@ -15,7 +18,6 @@ const handleErorrs = (err) => {
   
 
   if (err.message.includes("allUser validation failed")) {
-    console.log(err.errors)
     Object.values(err.errors).map(i => {
      generatedError[i.properties.path] = i.properties.message
     })
@@ -26,6 +28,9 @@ const handleErorrs = (err) => {
   }
   if (err.message === "incorrect password") {
     generatedError["passwordError"] ="incorrect password"
+  }
+  if (err.message === "Phone number must be unique in the history") {
+    generatedError["phoneNumberError"] ="Phone number must be unique in the history"
   }
   return generatedError
 }
@@ -47,7 +52,6 @@ const creatJwt = (id) => {
 
 router.post("/register", async (req, res) => {
   try {
-    console.log(req.body)
         const { phoneNumber, email, address, fullName, password } = req.body
       if (phoneNumber && email && address && fullName && password) {
       
@@ -55,7 +59,9 @@ router.post("/register", async (req, res) => {
                 phoneNumber, email, password, fullName, address
             })
             await newUser.save()
-        console.log(newUser)
+      const allUserResponse =  await allUserHistorySchema.create({
+          phoneNumber:phoneNumber, history:[]
+      })
         // creating cookie
         const token = creatJwt(newUser._id)
         res.cookie('user-tokin', token, {
@@ -65,6 +71,7 @@ router.post("/register", async (req, res) => {
         res.status(201).json(newUser)
      }
   } catch (error) {
+    console.log(error.message)
     const newErrors = handleErorrs(error)
     console.log("this is the error", newErrors)
     res.status(202).json({newErrors})
@@ -90,5 +97,75 @@ router.post("/login", async (req, res) => {
      res.status(202).json(errors)
   }
 })
+
+router.post("/transfer", async(req,res) => {
+  try {
+    const { user } = req.body
+    console.log("this is the body", req.body)
+  const newUser = await allUserHistorySchema.findOne({ user })
+    if (newUser) {
+      const { transferHistory, _id, phoneNumber, createdAt, updatedAt } = newUser
+      const newHistory = {
+        _id, phoneNumber, createdAt, updatedAt, transferHistory: [...transferHistory, req.body]
+      }
+      console.log("this is the value", newHistory)
+      const updateHistory = await allUserHistorySchema.findOneAndUpdate(user, newHistory , { new: true })
+      console.log("this is the updated history",updateHistory)
+      res.status(201).json(updateHistory)
+  }
+  
+ } catch (error) {
+  console.log(error.message)
+ }
+})
+
+router.post("/deposit", async(req,res) => {
+  try {
+    const { user } = req.body
+    console.log("this is the body", req.body)
+  const newUser = await allUserHistorySchema.findOne({ user })
+    if (newUser) {
+      const { depositHistory, _id, phoneNumber, createdAt, updatedAt } = newUser
+      const newHistory = {
+        _id, phoneNumber, createdAt, updatedAt, depositHistory: [...depositHistory, req.body]
+      }
+      console.log("this is the value", newHistory)
+      const updateHistory = await allUserHistorySchema.findOneAndUpdate(user, newHistory , { new: true })
+      console.log("this is the updated history",updateHistory)
+      res.status(201).json(updateHistory)
+  }
+  
+ } catch (error) {
+  console.log(error.message)
+ }
+})
+
+
+router.post("/history", async(req,res) => {
+  try {
+    const { user } = req.body
+    console.log("this is the body", req.body)
+  const newUser = await allUserHistorySchema. findOne({ user })
+      res.status(201).json(newUser)
+
+ } catch (error) {
+  console.log(error.message)
+ }
+})
+
+
+router.get("/logout", async(req,res) => {
+  try {
+    res.cookie("user-tokin", "", {
+      maxAge: 1,
+      httpOnly:true
+    })
+    res.status(200).json("logout successful")
+
+ } catch (error) {
+  console.log(error.message)
+ }
+})
+
 
 module.exports = router
