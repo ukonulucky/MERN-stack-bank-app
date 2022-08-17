@@ -145,8 +145,9 @@ router.post("/history", async(req,res) => {
   try {
     const { user } = req.body
     console.log("this is the body", req.body)
-  const newUser = await allUserHistorySchema. findOne({ user })
-      res.status(201).json(newUser)
+  const newUser = await allUserHistorySchema. findOne({ phoneNumber:user })
+     console.log(newUser)
+    res.status(201).json(newUser)
 
  } catch (error) {
   console.log(error.message)
