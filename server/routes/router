@@ -119,15 +119,16 @@ router.post("/transfer", async(req,res) => {
  }
 })
 
-router.post("/deposit", async(req,res) => {
+router.post("/deposit", async (req, res) => {
   try {
     const { user } = req.body
+    console.log(user)
     console.log("this is the body", req.body)
-  const newUser = await allUserHistorySchema.findOne({ user })
+  const newUser = await allUserHistorySchema.findOne({ phoneNumber:user })
     if (newUser) {
-      const { depositHistory, _id, phoneNumber, createdAt, updatedAt } = newUser
+      const { depositHistory, phoneNumber } = newUser
       const newHistory = {
-        _id, phoneNumber, createdAt, updatedAt, depositHistory: [...depositHistory, req.body]
+         phoneNumber,  depositHistory: [...depositHistory, req.body]
       }
       console.log("this is the value", newHistory)
       const updateHistory = await allUserHistorySchema.findOneAndUpdate(user, newHistory , { new: true })
@@ -145,8 +146,8 @@ router.post("/history", async(req,res) => {
   try {
     const { user } = req.body
     console.log("this is the body", req.body)
-  const newUser = await allUserHistorySchema. findOne({ phoneNumber:user })
-     console.log(newUser)
+  const newUser = await allUserHistorySchema.findOne({ phoneNumber:user })
+     console.log("history user",newUser)
     res.status(201).json(newUser)
 
  } catch (error) {
